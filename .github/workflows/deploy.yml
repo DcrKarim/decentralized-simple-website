@@ -13,38 +13,9 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
+    - name: Deploy to IPFS with Pinata
+      uses: popovoleksandr/ipfs-pinata-deploy-action@v1.0.0
       with:
-        node-version: 16.x  # Using Node.js 16, known to work with Pinata SDK
-
-    - name: Install Dependencies
-      run: npm install @pinata/sdk
-
-    - name: Deploy to IPFS
-      env:
-        PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
-        PINATA_SECRET_API_KEY: ${{ secrets.PINATA_SECRET_API_KEY }}
-      run: |
-        echo "Deploying files to IPFS"
-        node <<EOF
-        const pinataSDK = require('@pinata/sdk');
-        const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_API_KEY);
-        const fs = require('fs');
-
-        async function deployToIPFS() {
-          try {
-            console.log("Authenticating with Pinata...");
-            await pinata.testAuthentication();
-
-            console.log("Pinning directory to IPFS...");
-            const result = await pinata.pinFromFS('./'); // Pins the root directory
-            console.log("Successfully pinned:", result);
-          } catch (error) {
-            console.error("Error during IPFS deployment:", error);
-            process.exit(1); // Fail the workflow if there's an error
-          }
-        }
-
-        deployToIPFS();
-        EOF
+        pinataApiKey: ${{ secrets.PINATA_API_KEY }}
+        pinataSecretApiKey: ${{ secrets.PINATA_SECRET_API_KEY }}
+        pathToUpload: ./  # The directory to upload (root in this case)
