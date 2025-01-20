@@ -14,8 +14,9 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Deploy to IPFS with Pinata
-      uses: popovoleksandr/ipfs-pinata-deploy-action@v1.0.0
+      uses: popovoleksandr/ipfs-pinata-deploy-action@main
       with:
         pinataApiKey: ${{ secrets.PINATA_API_KEY }}
         pinataSecretApiKey: ${{ secrets.PINATA_SECRET_API_KEY }}
         pathToUpload: ./  # The directory to upload (root in this case)
+
