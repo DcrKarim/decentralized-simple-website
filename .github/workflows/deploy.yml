@@ -1,0 +1,26 @@
+name: Deploy to IPFS with Pinata
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Install Pinata CLI
+      run: npm install -g @pinata/sdk
+
+    - name: Deploy to IPFS
+      env:
+        PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
+        PINATA_SECRET_API_KEY: ${{ secrets.PINATA_SECRET_API_KEY }}
+      run: |
+        echo "Deploying files to IPFS"
+        npx pinata-cli pinDirectory ./ --pinataApiKey=$PINATA_API_KEY --pinataSecretApiKey=$PINATA_SECRET_API_KEY
+
