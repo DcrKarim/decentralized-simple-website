@@ -13,6 +13,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 18.x
+
     - name: Install Dependencies
       run: npm install @pinata/sdk
 
@@ -24,17 +29,19 @@ jobs:
         echo "Deploying files to IPFS"
         node <<EOF
         const pinataSDK = require('@pinata/sdk');
-        const fs = require('fs');
-        const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_API_KEY);
+        const pinata = pinataSDK.default(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_API_KEY);
 
-        pinata.testAuthentication().then(() => {
-          return pinata.pinFromFS('./');
-        }).then((result) => {
-          console.log('Successfully pinned:', result);
-        }).catch((err) => {
-          console.error('Error during pinning:', err);
-          process.exit(1);
-        });
+        pinata.testAuthentication()
+          .then(() => {
+            return pinata.pinFromFS('./');
+          })
+          .then((result) => {
+            console.log('Successfully pinned:', result);
+          })
+          .catch((err) => {
+            console.error('Error during pinning:', err);
+            process.exit(1);
+          });
         EOF
 
 
