@@ -13,8 +13,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install Pinata CLI
-      run: npm install -g @pinata/sdk
+    - name: Install Dependencies
+      run: npm install @pinata/sdk
 
     - name: Deploy to IPFS
       env:
@@ -22,5 +22,19 @@ jobs:
         PINATA_SECRET_API_KEY: ${{ secrets.PINATA_SECRET_API_KEY }}
       run: |
         echo "Deploying files to IPFS"
-        npx pinata-cli pinDirectory ./ --pinataApiKey=$PINATA_API_KEY --pinataSecretApiKey=$PINATA_SECRET_API_KEY
+        node <<EOF
+        const pinataSDK = require('@pinata/sdk');
+        const fs = require('fs');
+        const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_API_KEY);
+
+        pinata.testAuthentication().then(() => {
+          return pinata.pinFromFS('./');
+        }).then((result) => {
+          console.log('Successfully pinned:', result);
+        }).catch((err) => {
+          console.error('Error during pinning:', err);
+          process.exit(1);
+        });
+        EOF
+
 
