@@ -26,29 +26,20 @@ jobs:
         PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
         PINATA_SECRET_API_KEY: ${{ secrets.PINATA_SECRET_API_KEY }}
       run: |
-        echo "Deploying files to IPFS"
+        echo "Deploying files to IPFS using Pinata SDK"
         node <<EOF
         const pinataSDK = require('@pinata/sdk');
         const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_API_KEY);
-        const path = require('path');
 
-        async function deployToIPFS() {
-          try {
-            console.log("Authenticating...");
-            const authResponse = await pinata.testAuthentication();
-            console.log("Authentication successful:", authResponse);
-
-            console.log("Pinning directory...");
-            const result = await pinata.pinFromFS(path.resolve('./'));
-            console.log("Successfully pinned:", result);
-          } catch (error) {
-            console.error("Error during deployment:", error);
+        pinata.testAuthentication()
+          .then(() => {
+            return pinata.pinFromFS('./');
+          })
+          .then((result) => {
+            console.log('Successfully pinned:', result);
+          })
+          .catch((err) => {
+            console.error('Error during pinning:', err);
             process.exit(1);
-          }
-        }
-
-        deployToIPFS();
+          });
         EOF
-
-
-
