@@ -16,7 +16,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: 18.x
+        node-version: 16.x  # Using Node.js 16, known to work with Pinata SDK
 
     - name: Install Dependencies
       run: npm install @pinata/sdk
@@ -26,20 +26,25 @@ jobs:
         PINATA_API_KEY: ${{ secrets.PINATA_API_KEY }}
         PINATA_SECRET_API_KEY: ${{ secrets.PINATA_SECRET_API_KEY }}
       run: |
-        echo "Deploying files to IPFS using Pinata SDK"
+        echo "Deploying files to IPFS"
         node <<EOF
         const pinataSDK = require('@pinata/sdk');
         const pinata = pinataSDK(process.env.PINATA_API_KEY, process.env.PINATA_SECRET_API_KEY);
+        const fs = require('fs');
 
-        pinata.testAuthentication()
-          .then(() => {
-            return pinata.pinFromFS('./');
-          })
-          .then((result) => {
-            console.log('Successfully pinned:', result);
-          })
-          .catch((err) => {
-            console.error('Error during pinning:', err);
-            process.exit(1);
-          });
+        async function deployToIPFS() {
+          try {
+            console.log("Authenticating with Pinata...");
+            await pinata.testAuthentication();
+
+            console.log("Pinning directory to IPFS...");
+            const result = await pinata.pinFromFS('./'); // Pins the root directory
+            console.log("Successfully pinned:", result);
+          } catch (error) {
+            console.error("Error during IPFS deployment:", error);
+            process.exit(1); // Fail the workflow if there's an error
+          }
+        }
+
+        deployToIPFS();
         EOF
